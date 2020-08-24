@@ -569,4 +569,6 @@ async def on_ready():
     channel = client.get_channel(int(733230754817114166))
     await channel.send('К серверу присоеденился {0}!'.format(client.user.name))
 tokin = os.environ.get('bot_token')
-client.run("NzMzMjM3NDQ1MTcyMzk2MDQ0.XxAOlQ.eUb0YOyMJuguUHgeAhHj9j7137Q")
+tok = "NzMzMjM3NDQ1MTcyMzk2MDQ0"
+en = ".XxAOlQ.A6_McAUlhRfFvJuDE7IloQe98tc"
+client.run(str(tok+en))

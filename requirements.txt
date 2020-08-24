@@ -1,5 +1,4 @@
 aiohttp
-certifi-2020.6.20
 cffi-1.14.1
 chardet-3.0.4
 discord.py-1.3.4

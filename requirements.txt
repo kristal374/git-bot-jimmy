@@ -1,5 +1,4 @@
 aiohttp
-chardet-3.0.4
 discord.py-1.3.4
 gevent-20.6.2
 greenlet-0.4.16

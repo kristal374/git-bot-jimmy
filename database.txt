@@ -1,0 +1,16 @@
+Валка;
+Anonim;indeetz;Александр;tuk01;влад;Sergii;
+крис \т/ кристал tuk01 валера kresh 
+<@665984135529234438> <@472082691874095114> <@473728544271499265> <@484408909810106378> <@485710863630860291> <@668565185132232718> 
+Anonim#7711 indeetz#6609 Александр#2312 tuk01#0295 влад#2840 Sergii#2929 
+Anonim(крис) indeetz(\т/) Александр(кристал) tuk01(tuk01) влад(валера) Anonim(крисс)) Sergii(kresh) tuk01(tuk02) 
+Anonim indeetz Александр tuk01 влад Anonim Sergii tuk01 
+none none none none none none 
+none none none none none none 
+0 0 0 0 0 0 
+0 0 0 0 0 0 
+ 
+5;3;2;3;4;0;5;3;;
+Anonim indeetz Александр tuk01 влад Anonim Sergii tuk01 
+Sergii(kresh) tuk01(tuk01) Александр(кристал) tuk01(tuk01) влад(валера) Anonim(крис) Sergii(kresh) tuk01(tuk01) ***** ***** 
+ 

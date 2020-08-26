@@ -5,7 +5,7 @@ import threading
 import time
 import random, asyncio
 client = discord.Client()
-order = ""
+order = ["Орден"]
 l_author = []
 l_nick = []
 l_mention = []
@@ -165,8 +165,11 @@ async def on_message(message):
       channel = client.get_channel(int(733230754817114166))
       await ctx.channel.purge(limit=1)
       del msg_list[0]
-      order = " ".join(msg_list).title()
-      retStr = str(f"""```css\n> Орден для рейдов был обновлён игроком {message.author} на \"{order}\" ```""")
+      try:
+        order[0] = " ".join(msg_list).title()
+      except:
+          order.append(" ".join(msg_list).title())
+      retStr = str(f"""```css\n> Орден для рейдов был обновлён игроком {message.author} на \"{order[0]}\" ```""")
       await ctx.channel.send(retStr)
     elif len(msg_list) >= 2 and str(msg_list[0]+" " +msg_list[1]) == "запись открыта":
         await ctx.channel.purge(limit=1)
@@ -179,7 +182,7 @@ async def on_message(message):
             await message.channel.send(f"""Запись на рейд {data} ОТКРЫТА!
 РЕЙД 21.30 по МСК  
 Наличие дискорда обязательное, ну прям ооочень нужно, возможны исключения лишь при согласовании с Максом
-Рейд на основе ордена \" {order} \"
+Рейд на основе ордена \" {order[0]} \"
 Перекличка 21:00-21:15 по МСК
 Быть в дискорде в 21:25 (в противном случае замена)
 Старт рейда 21:30 (без исключений) по МСК
@@ -191,7 +194,7 @@ async def on_message(message):
           await message.channel.send(f"""Запись на рейд {d1}{data} ОТКРЫТА!
 РЕЙД 21.30 по МСК  
 Наличие дискорда обязательное, ну прям ооочень нужно, возможны исключения лишь при согласовании с Максом
-Рейд на основе ордена \" {order} \"
+Рейд на основе ордена \" {order[0]} \"
 Перекличка 21:00-21:15 по МСК
 Быть в дискорде в 21:25 (в противном случае замена)
 Старт рейда 21:30 (без исключений) по МСК
@@ -259,7 +262,10 @@ async def on_message(message):
             elif (f'{l_author[l_author.index(message.author.name)]}({l_nick[l_author.index(message.author.name)]})' in lst_reid) == True:
                 await ctx.channel.send(f"Вы уже записаны {message.author.name}!")
                 time.sleep(5)
-                await client.http.delete_message(dezap.channel, dezap.id)
+                try:
+                    await client.http.delete_message(dezap.channel, dezap.id)
+                except:
+                    await ctx.channel.purge(limit=1)
             else:
                 n = l_author.index(message.author.name)
                 reid.append(l_author[n])
@@ -570,8 +576,182 @@ ID Игрока: {l_mention[a]},
 
 @client.event
 async def on_ready():
+    global order, l_author, l_nick, l_mention, l_author_m, lst_reid, reid, last_reid, last_index_reid, wins, sum_reid, indexl, composit, teen, sostaw, zapas, messag, zapisano, dezap, ykaz, autir
+    inp = open('database.txt', 'r')
+    order = (inp.readline() .split(";"))
+    l_author = (inp.readline() .split(";"))
+    l_nick = (inp.readline() .split(" "))
+    l_mention = (inp.readline() .split(" "))
+    l_author_m = (inp.readline() .split(" "))
+    lst_reid = (inp.readline() .split(" "))
+    reid = (inp.readline() .split(" "))
+    last_reid = (inp.readline() .split(" "))
+    last_index_reid = (inp.readline() .split(" "))
+    wins = (inp.readline() .split(" "))
+    sum_reid = (inp.readline() .split(" "))
+    indexl = (inp.readline() .split(" "))
+    composit = (inp.readline() .split(";"))
+    teen = (inp.readline() .split(" "))
+    sostaw = (inp.readline() .split(" "))
+    # zapas = inp.readline()
+    # messag = inp.readline()
+    # zapisan = inp.readline()
+    # dezap = inp.readline()
+    # ykaz = inp.readline()
+    # autir = inp.readline()
+    inp.close()
+    if ('' in order) == True:
+        v = order.index('')
+        del order[v]
+    if ('' in l_author) == True:
+        v = l_author.index('')
+        del l_author[v]
+    if ('' in l_nick) == True:
+        v = l_nick.index('')
+        del l_nick[v]
+    if ('' in l_mention) == True:
+        v = l_mention.index('')
+        del l_mention[v]
+    if ('' in l_author_m) == True:
+        v = l_author_m.index('')
+        del l_author_m[v]
+    if ('' in lst_reid) == True:
+        v = lst_reid.index('')
+        del lst_reid[v]
+    if ('' in reid) == True:
+        v = reid.index('')
+        del reid[v]
+    if ('' in last_reid) == True:
+        v = last_reid.index('')
+        del last_reid[v]
+    if ('' in last_index_reid) == True:
+        v = last_index_reid.index('')
+        del last_index_reid[v]
+    if ('' in wins) == True:
+        v = wins.index('')
+        del wins[v]
+    if ('' in sum_reid) == True:
+        v = sum_reid.index('')
+        del sum_reid[v]
+    if ('' in indexl) == True:
+        v = indexl.index('')
+        del indexl[v]
+    if ('' in composit) == True:
+        v = composit.index('')
+        del composit[v]
+    if ('' in teen) == True:
+        v = teen.index('')
+        del teen[v]
+    if ('' in sostaw) == True:
+        v = sostaw.index('')
+        del sostaw[v]
+    if ('\n' in order) == True:
+        v = order.index('\n')
+        del order[v]
+    if ('\n' in l_author) == True:
+        v = l_author.index('\n')
+        del l_author[v]
+    if ('\n' in l_nick) == True:
+        v = l_nick.index('\n')
+        del l_nick[v]
+    if ('\n' in l_mention) == True:
+        v = l_mention.index('\n')
+        del l_mention[v]
+    if ('\n' in l_author_m) == True:
+        v = l_author_m.index('\n')
+        del l_author_m[v]
+    if ('\n' in lst_reid) == True:
+        v = lst_reid.index('\n')
+        del lst_reid[v]
+    if ('\n' in reid) == True:
+        v = reid.index('\n')
+        del reid[v]
+    if ('\n' in last_reid) == True:
+        v = last_reid.index('\n')
+        del last_reid[v]
+    if ('\n' in last_index_reid) == True:
+        v = last_index_reid.index('\n')
+        del last_index_reid[v]
+    if ('\n' in wins) == True:
+        v = wins.index('\n')
+        del wins[v]
+    if ('\n' in sum_reid) == True:
+        v = sum_reid.index('\n')
+        del sum_reid[v]
+    if ('\n' in indexl) == True:
+        v = indexl.index('\n')
+        del indexl[v]
+    if ('\n' in composit) == True:
+        v = composit.index('\n')
+        del composit[v]
+    if ('\n' in teen) == True:
+        v = teen.index('\n')
+        del teen[v]
+    if ('\n' in sostaw) == True:
+        v = sostaw.index('\n')
+        del sostaw[v]
+
     channel = client.get_channel(int(733230754817114166))
     await channel.send('К серверу присоеденился {0}!'.format(client.user.name))
+    print(order, l_author, l_nick, l_mention, l_author_m, lst_reid, reid, last_reid, last_index_reid, wins, sum_reid, indexl, composit, teen, sostaw, zapas, messag, zapisano, dezap, ykaz, autir)
+class ClockThread(threading.Thread):
+    def __init__(self,interval):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self.interval = interval
+    def run(self):
+        while True:
+            time.sleep(self.interval)
+            f = open('database.txt', 'w+')
+            f.seek(0)
+            f.close()
+            output = open('database.txt', 'w')
+            orde = ";".join(map(str, order))
+            l_autho = ";".join(map(str, l_author))
+            l_nic =  " ".join(map(str, l_nick))
+            l_mentio = " ".join(map(str, l_mention))
+            l_author_men = " ".join(map(str, l_author_m))
+            lst_rei = " ".join(map(str, lst_reid))
+            rei = " ".join(map(str, reid))
+            last_rei = " ".join(map(str, last_reid))
+            last_index_rei = " ".join(map(str, last_index_reid))
+            win = " ".join(map(str, wins))
+            sum_rei = " ".join(map(str, sum_reid))
+            inde = " ".join(map(str, indexl))
+            composi =";".join(map(str, composit))
+            tee = " ".join(map(str, teen))
+            sosta = " ".join(map(str, sostaw))
+            zapa = " ".join(map(str, zapas))
+            # messa = messag
+            # zapisan = zapisano
+            # deza = dezap
+            # yka = ykaz
+            # auti = autir
+            output.write(str(orde) +';\n')
+            output.write(str(l_autho) +';\n')
+            output.write(str(l_nic) +' \n')
+            output.write(str(l_mentio) +' \n')
+            output.write(str(l_author_men) +' \n')
+            output.write(str(lst_rei) +' \n')
+            output.write(str(rei) +' \n')
+            output.write(str(last_rei) +' \n')
+            output.write(str(last_index_rei) +' \n')
+            output.write(str(win) +' \n')
+            output.write(str(sum_rei) +' \n')
+            output.write(str(inde) +' \n')
+            output.write(str(composi) +'\n')
+            output.write(str(tee) +' \n')
+            output.write(str(sosta) +' \n')
+            output.write(str(zapa) +' \n')
+            # output.write(str(messa) +' \n')
+            # output.write(str(zapisan) +' \n')
+            # output.write(str(deza) +' \n')
+            # output.write(str(yka) +' \n')
+            # output.write(str(auti))
+            output.close()
+t = ClockThread(15)
+t.start()
 tok = "NzMzMjM3NDQ1MTcyMzk2MDQ0"
 en = ".XxAOlQ.A6_McAUlhRfFvJuDE7IloQe98tc"
 client.run(str(tok+en))
+

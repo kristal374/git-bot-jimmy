@@ -1,32 +1,61 @@
 import discord
-from discord import ext
-from discord.ext import commands
-import threading
+
+import httplib2
+import apiclient
+from oauth2client.service_account import ServiceAccountCredentials
 import time
 import random, asyncio
+import threading
 client = discord.Client()
 order = ["Орден"]
-l_author = []
-l_nick = []
-l_mention = []
-l_author_m = []
-lst_reid = []
-reid = []
-last_reid = []
-last_index_reid = []
-wins = []
-sum_reid = []
-indexl = []
-composit = ['','','','','','','','','','']
-teen = []
-sostaw = []
-zapas = []
+l_author, l_nick, l_mention, l_author_m, lst_reid, reid, last_reid, last_index_reid, wins, sum_reid, indexl, teen, sostaw, zapas = [], [], [], [], [], [], [], [], [], [], [], [], [], []
+composit = ['', '', '', '', '', '', '', '', '', '']
 ltime = ["сегодня"]
-messag = 0
-zapisano = 0
-dezap = 0
-ykaz = 0
-autir = 0
+messag, zapisano, dezap, ykaz, autir = 0, 0, 0, 0, 0
+
+CREDENTIALS_FILE = 'Grim-Soul-PlachValki-reids-fac49cc847d2.json'
+spreadsheet_id = '1LMdiA-YvYyOjFus56XWc-sUN5moBRCds9g7M-cdEtA0'
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE, ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'])
+httpAuth = credentials.authorize(httplib2.Http())
+service = apiclient.discovery.build('sheets', 'v4', http = httpAuth)
+try:
+    values = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range='O2', majorDimension='COLUMNS').execute()
+    valy = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=f'A2:B{int(((values["values"])[0])[0])}', majorDimension='COLUMNS').execute()
+    val = valy["values"]
+    lst_reid, reid = val[0], val[1]
+except:
+    pass
+try:
+    valy = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range='C2:D11', majorDimension='COLUMNS').execute()
+    val = valy["values"]
+    teen, sostaw = val[0], val[1]
+except:
+    try:
+        val.append([])
+        teen, sostaw = val[0], val[1]
+    except:
+        pass
+try:
+    values = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range='N2', majorDimension='COLUMNS').execute()
+    valy = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=f'E2:L{int(((values["values"])[0])[0])}', majorDimension='COLUMNS').execute()
+    val = valy["values"]
+    l_nick, l_mention, l_author_m, last_reid, last_index_reid, wins, sum_reid, l_author = val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]
+except:
+    pass
+try:
+    values = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range='P2', majorDimension='COLUMNS').execute()
+    valy = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range=f'M{int(((values["values"])[0])[0])}', majorDimension='COLUMNS').execute()
+    val = valy["values"]
+    zapas = val[0]
+except:
+    pass
+try:
+    valy = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range='Q2', majorDimension='COLUMNS').execute()
+    val = valy["values"]
+    order = val[0]
+except:
+    pass
 def d_raid(data, l_reid, ind):
     d = data.split(':')
     l = l_reid.split(':')
@@ -156,11 +185,32 @@ def a_a():
     return a
 @client.event
 async def on_message(message):
-    global order, messag, zapisano, dezap, ykaz, autir
+    global order, messag, zapisano, dezap, ykaz, autir, service
+    def res():
+        reid.clear()
+        lst_reid.clear()
+        sostaw.clear()
+        teen.clear()
+        service.spreadsheets().values().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={"valueInputOption": "USER_ENTERED", "data": [
+                {"range": "A2:A11",
+                 "majorDimension": "COLUMNS",
+                 "values": [["", "", "", "", "", "", "", "", "", ""]]},
+                {"range": "B2:B11",
+                 "majorDimension": "COLUMNS",
+                 "values": [["", "", "", "", "", "", "", "", "", ""]]},
+                {"range": "C2:C11",
+                 "majorDimension": "COLUMNS",
+                 "values": [["None", "None", "None", "None", "None", "None", "None", "None", "None", "None"]]},
+                {"range": "D2:D11",
+                 "majorDimension": "COLUMNS",
+                 "values": [["", "", "", "", "", "", "", "", "", ""]]}]}).execute()
+
+
     msg = message.content.lower()
     ctx = message
     msg_list = msg.split()
-
     if len(msg_list) > 1 and msg_list[0] == "орден":
       channel = client.get_channel(int(733230754817114166))
       await ctx.channel.purge(limit=1)
@@ -173,8 +223,7 @@ async def on_message(message):
       await ctx.channel.send(retStr)
     elif len(msg_list) >= 2 and str(msg_list[0]+" " +msg_list[1]) == "запись открыта":
         await ctx.channel.purge(limit=1)
-        lst_reid.clear()
-        reid.clear()
+        res()
         if not zapisano == 0:
             await client.http.unpin_message(zapisano.channel.id, zapisano.id)
         if (ltime[0] in msg_list) == True:
@@ -240,7 +289,7 @@ async def on_message(message):
                     l_author.append(message.author.name)
                     l_mention.append(message.author.mention)
                     l_nick.append(msg_list[1])
-                    l_author_m.append(message.author)
+                    l_author_m.append(str(message.author))
                     last_reid.append("none")
                     last_index_reid.append("none")
                     wins.append(0)
@@ -327,7 +376,7 @@ async def on_message(message):
 \"Орден *Название ордена*\" - Эта команда изменяет орден в котором будут проводиться рейды(Отображается во время записи)
 \"Запись открыта\" - Эта команда открывает запись на рейд(Публикация новой записи удаляет всех кто записался под старой записью). Прибавив в предложение слово "Сегодня", откроет рейд на этот же день.
 \"Состав\" - Публикует состав(если записавшихся менее 5 запись не будет создана)
-\"Рейд победа\" или \"Рейд поражение\" - изменяе статистику участвующих в зависимости от результата рейда
+\"Рейд победа\" или \"Рейд поражение\" - изменяет статистику участвующих в зависимости от результата рейда
 \"+\" - записывает автора сообщения на рейд
 \"+ пустышка *Ник*\" - позволяет записать себя повторно на рейд под другим ником
 \"+ автор *Ник*\" - позволяет записать другого участника на рейд
@@ -335,12 +384,15 @@ async def on_message(message):
 \"Очистить *\'количество сообщений которые следует удалить\'*\" - удалить n-ое количество сообщений
 \"Список всех игроков\" - выводит список всех игроков и их ников
 \"Статистика *Ник*\" - выводит статистику отдельного игрока
+\"Статистика всех\" - выводит статистику всех игроков когда-либо записаных на рейд
 \"Вызвать всех\" - упоминает абсолютно всех участников 
 \"Созвать всех на рейд\" - упоминает только тех кто не записался на рейд
-\"Задолбать всех в ЛС\" - присылает личное сообщение абсолютно всем участникам
 \"Подмена "*Номер игрока в составе*" "*Номер игрока в составе*"\" - меняет местами игроков в составе
+\"Удалить игрока *Номер игрока в составе* из состава\" - удаляет игрока из состава, в последствии он не будет учтён в статистике после рейда. (Пахан находится под номером 1, гоп №2 в 8 команде - под номером 10)
 \"Команды\" - выводит список всех команд бота""")
     elif len(msg_list) >= 2 and msg_list[0] == "очистить":
+        if msg_list[1] > 50:
+            msg_list[1] = 50
         await ctx.channel.purge(limit=int(msg_list[1])+1)
     elif len(msg_list) == 3 and msg_list[0] == "замена" and int(msg_list[1]) <= 10:
         if (msg_list[2] in l_nick) == True:
@@ -392,52 +444,74 @@ async def on_message(message):
     elif len(msg_list) == 2 and msg_list[0] == "статистика":
         if (msg_list[1] in l_nick) == True:
             a = l_nick.index(msg_list[1])
-            b = str(f"""```css\nИгрок: {l_author[a]},
-Ник: {l_nick[a]},
-ID Игрока: {l_mention[a]},
-Количество рейдов: {sum_reid[a]},
-Количество побед: {wins[a]},
-Дата последнего рейда: {last_reid[a]},
-Роль на последнем рейде: {last_index_reid[a]}.```""")
+            try:
+                kpd = (int(wins[a])/int(sum_reid[a]))*100
+                f = {kpd == 100: 100, kpd < 10: float(str(kpd)[0:3]), kpd >= 10: float(str(kpd)[0:4])}[True]
+                kpd = {f == int(f): int(f), f != int(f): f}[True]
+            except:
+                kpd = 0
+            b = str(f"""```css\nИгрок: {l_author[a]}
+Ник: {l_nick[a]}
+Идентефикатор Discord: {l_author_m[a]}
+ID Игрока: {l_mention[a]}
+Количество рейдов: {sum_reid[a]}
+Количество побед: {wins[a]}
+Дата последнего рейда: {last_reid[a]}
+Роль на последнем рейде: {last_index_reid[a]}
+Эффективность на рейдах: {kpd} %```""")
             await message.channel.send(b)
+        elif msg_list[1] == "всех":
+            for a in range(len(l_author)):
+                try:
+                    kpd = (int(wins[a]) / int(sum_reid[a])) * 100
+                    f = {kpd == 100: 100, kpd < 10: float(str(kpd)[0:3]), kpd >= 10: float(str(kpd)[0:4])}[True]
+                    kpd = {f == int(f): int(f), f != int(f): f}[True]
+                except:
+                    kpd = 0
+                b = str(f"""```css\nИгрок {l_author[a]}:
+                Ник: {l_nick[a]}
+                Идентефикатор Discord: {l_author_m[a]}
+                ID Игрока: {l_mention[a]}
+                Количество рейдов: {sum_reid[a]}
+                Количество побед: {wins[a]}
+                Дата последнего рейда: {last_reid[a]}
+                Роль на последнем рейде: {last_index_reid[a]}
+                Эффективность на рейдах: {kpd} %```""")
+                await message.channel.send(b)
         else:
             await message.channel.send("Введите корректный ник Игрока для того чтоб увидеть его статистику!")
     elif len(msg_list) == 2 and msg_list[0] == "рейд" and msg_list[1] == "победа" or len(msg_list) == 2 and msg_list[0] == "рейд" and msg_list[1] =="поражение":
-        a = a_a()
-        v = 0
-        m = 0
-        ln = len(a_a())
-        while not ln-m == 0:
-            m+=1
-            v+=1
-            if not v %2 ==0:
-                del a[ln-m]
-        kyl = list(a)
-        a = list(set(a))
-        if msg_list[1] == "победа":
-            for i in range(len(a)):
-                tnd = l_author.index(a[i])
-                sum_reid[tnd] = int(sum_reid[tnd]+1)
-                wins[tnd] = int(wins[tnd]+1)
-                last_reid[tnd] = time.strftime("%d:%m:%Y")
-                last_index_reid[tnd] = int(kyl.index(a[i]))+1
-            await message.channel.send("Поздравляю!")
-            reid.clear()
-            lst_reid.clear()
-            sostaw.clear()
+        if len(sostaw) >=6:
+            a = a_a()
+            v = 0
+            m = 0
+            ln = len(a_a())
+            while not ln-m == 0:
+                m+=1
+                v+=1
+                if not v %2 ==0:
+                    del a[ln-m]
+            kyl = list(a)
+            a = list(set(a))
+            if msg_list[1] == "победа":
+                for i in range(len(a)):
+                    tnd = l_author.index(a[i])
+                    sum_reid[tnd] = int(int(sum_reid[tnd])+1)
+                    wins[tnd] = int(wins[tnd])+1
+                    last_reid[tnd] = time.strftime("%d:%m:%Y")
+                    last_index_reid[tnd] = int(kyl.index(a[i]))+1
+                await message.channel.send("Поздравляю!")
+                res()
+            else:
+                for i in range(len(a)):
+                    tnd = l_author.index(a[i])
+                    sum_reid[tnd] = int(sum_reid[tnd])+1
+                    last_reid[tnd] = time.strftime("%d:%m:%Y")
+                    last_index_reid[tnd] = int(kyl.index(a[i]))+1
+                await message.channel.send("Сочувствую...")
+                res()
         else:
-            for i in range(len(a)):
-                tnd = l_author.index(a[i])
-                sum_reid[tnd] = int(sum_reid[tnd]+1)
-                last_reid[tnd] = time.strftime("%d:%m:%Y")
-                last_index_reid[tnd] = int(kyl.index(a[i]))+1
-            reid.clear()
-            lst_reid.clear()
-            sostaw.clear()
-            await message.channel.send("Сочувствую...")
-            reid.clear()
-            lst_reid.clear()
-            sostaw.clear()
+            await message.channel.send("В рейде должно участвовать более 6 игроков!")
     elif msg == "вызвать всех":
         rt = []
         for i in range(len(l_author)):
@@ -445,8 +519,8 @@ ID Игрока: {l_mention[a]},
                 pass
             else:
                 rt.append(l_mention[i])
-                rt = ", ".join(l_mention)
-        await message.channel.send(f"Вас призывает {message.author.name}! Придити же! {rt}.")
+        rt = ", ".join(rt)
+        await message.channel.send(f"Вас призывает {message.author.name}! Придите же! {rt}.")
     elif msg == "созвать всех на рейд":
         rt = []
         for i in range(len(l_author)):
@@ -454,113 +528,27 @@ ID Игрока: {l_mention[a]},
                 pass
             else:
                 rt.append(l_mention[i])
-                rt = ", ".join(l_mention)
+        rt = ", ".join(l_mention)
         if len(rt) == 0:
             await message.channel.send(f"Все уже записаны!")
         else:
             await message.channel.send(f"Вас призывает {message.author.name} для участия в рейде! Придити же и запишитесь! {rt}.")
-    elif msg == "задолбать всех в лс":
-        for i in range(len(l_author)):
-            if l_author[i] == message.author.name:
-                pass
-            else:
-                member = l_author_m[i]
-                await member.send(f"Срочно явиться в дискорд! Вас призывает {message.author.name}")
-        await message.channel.send("Задача\"Задолбать всех в ЛС\" выполнена успешно!")
     elif len(msg_list)==5 and msg_list[0] =="удалить" and msg_list[1] == "игрока" and msg_list[3] =="из" and msg_list[4] == "состава":
         if int(msg_list[2]) <= 10 and int(msg_list[2])>0:
-            sostaw[int(msg_list[2])-1] = "*****"
-            new_text = str(f"""```css\nКоманда 4 ({sostaw[6]}, {sostaw[7]})
+            if sostaw != []:
+                sostaw[int(msg_list[2])-1] = "*****"
+                new_text = str(f"""```css\nКоманда 4 ({sostaw[6]}, {sostaw[7]})
 Команда 6 ({sostaw[5]}, {sostaw[8]})
 Команда 8 ({sostaw[4]}, {sostaw[9]})
 Гопник 1 ({sostaw[3]})
 Гопник 5 ({sostaw[2]})
 Гопник 7 ({sostaw[1]})
 Пахан ({sostaw[0]})```""")
-            await messag.edit(content=new_text)
-            await message.channel.send("Игрок был удалён с состава")
-        else:
-            await ctx.channel.send("Введите корректные значения для удаления игрока с состава!")
-    elif len(msg_list) >= 4 and msg_list[0] == "redact":
-        await ctx.channel.purge(limit=1)
-        try:
-            if msg_list[1] == "nick":
-                if (msg_list[2] in l_nick) == True:
-                    l_nick[l_nick.index(msg_list[2])] = msg_list[3]
-                    await message.channel.send("Pass context: l_nick changed successfully")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-                else:
-                    await message.channel.send("Pass context: index not found")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-            elif msg_list[1] == "wins":
-                if (msg_list[2] in l_nick) == True:
-                    wins[l_nick.index(msg_list[2])] = int(msg_list[3])
-                    await message.channel.send("Pass context: wins changed successfully")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-                else:
-                    await message.channel.send("Pass context: index not found")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-            elif msg_list[1] == "sum_reid":
-                if (msg_list[2] in l_nick) == True:
-                    sum_reid[l_nick.index(msg_list[2])] = int(msg_list[3])
-                    await message.channel.send("Pass context: sum_reid changed successfully")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-                else:
-                    await message.channel.send("Pass context: index not found")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-            elif msg_list[1] == "last_index_reid":
-                if (msg_list[2] in l_nick) == True:
-                    last_index_reid[l_nick.index(msg_list[2])] = int(msg_list[3])
-                    await message.channel.send("Pass context: wins changed successfully")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-                else:
-                    await message.channel.send("Pass context: index not found")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-            elif msg_list[1] == "last_reid":
-                if (msg_list[2] in l_nick) == True:
-                    last_reid[l_nick.index(msg_list[2])] = msg_list[3]
-                    await message.channel.send("Pass context: wins changed successfully")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-                else:
-                    await message.channel.send("Pass context: index not found")
-                    time.sleep(2)
-                    await ctx.channel.purge(limit=1)
-        except:
-            await message.channel.send("Error index!")
-            time.sleep(2)
-            await ctx.channel.purge(limit=1)
-    elif msg == "скрытые команды":
-        await message.channel.send("~~ <1<1;<<<1;>1;>3>1;>1;>>>1;>1; >>2;<1;<3;<1<2; \">1>2;<2;<1;>1;<<2;<1<2;\" <<<1;>1; >1;<<<1;>4;>>>1;>>2;<<1;<1<1;<<2;<<<2;>>>2; >1^3;>>1;>4>1;<<2;<2;, >1>1;<<<2;<1<1;>>>1;<2; <<<1;>1;>>1;>3;>1;<<<1;>>2;<2; <1<1;>1>1;>>2;<1<1;<<2;>1; <<2;<<<2;<1<2;<<<2;>1>2;>4>1;<<1; <1<1;>>>1;<2;<1;>2>1;<2;<1<2; >>2;>>1;>>>2;<2;<<<1;>>2;<1<2;>4>2;, >1>1;<<<2;<1<1;>>>1;<2; <1<1;>1>1;>>2;<1<1;<<2;>1; >>2;<1;<3;<1<2; <<<1;>>2;<<2; >>2;>4;>1>2;<<<2;<<2;>1; >2>1; <<2;<<<2;<1<2;<<<2;>1>2;<<<2;>4;<<<2; >1>1;>1>2;<<<2;>>2;>>1;>3;<<<2;<1;>>2;<1<2;<1<1;>1^3; >1>2;<2;<1;>1;<<2;<1<2;>>2;>1>2;<<<2;>3;>1;<<<1;>>2;<2; >>2; >>>1;>>2;>3>2;>4>2; >1>1;<<<2;<1<1;>>>1;<2; >>1;<<<1;>1;>3>1;<2;<<<1;>>2;<2; <<<1;>1; <<2;<<<2;<1<2;<<<2;>1>2;<<<2;<2; >1>1;>1>2;<<<2;>>2;>>1;>3;<<<2;<1;>>2;<1<2;<1<1;>1^3; >>1;>1;>>>2;<2;<<<1;>1;")
-    elif len(msg_list)==2 and msg_list[0] == "*!^7849&45128$1632/+11":
-        try:
-            if (msg_list[1] in l_nick) == True:
-                n = l_nick.index(msg_list[1])
-                if (l_author[n] in reid) == True:
-                    del reid[reid.index(l_author[n])]
-                del l_nick[n]
-                del l_author[n]
-                del l_mention[n]
-                del last_reid[n]
-                del last_index_reid[n]
-                del l_author_m[n]
-                await message.channel.send("Задача выполнена успешно!")
-                time.sleep(2)
-                await ctx.channel.purge(limit=2)
+                await message.channel.send(new_text)
+                await message.channel.send("Игрок был удалён из состава")
             else:
-                await message.channel.send("Игрок не найден!")
-                time.sleep(2)
-                await ctx.channel.purge(limit=2)
-        except:
-            pass
+                await ctx.channel.send("Введите корректные значения для удаления игрока с состава!")
+
     if len(msg_list) > 5 and msg_list[0] == "```css" and msg_list[1] =="команда" and msg_list[2] =="4":
         messag = message
     if len(msg_list) > 2 and msg_list[0] == 'игроков' and msg_list[1] =="записано":
@@ -576,124 +564,8 @@ ID Игрока: {l_mention[a]},
 
 @client.event
 async def on_ready():
-    global order, l_author, l_nick, l_mention, l_author_m, lst_reid, reid, last_reid, last_index_reid, wins, sum_reid, indexl, composit, teen, sostaw, zapas, messag, zapisano, dezap, ykaz, autir
-    inp = open('database.txt', 'r')
-    order = (inp.readline() .split(";"))
-    l_author = (inp.readline() .split(";"))
-    l_nick = (inp.readline() .split(" "))
-    l_mention = (inp.readline() .split(" "))
-    l_author_m = (inp.readline() .split(" "))
-    lst_reid = (inp.readline() .split(" "))
-    reid = (inp.readline() .split(" "))
-    last_reid = (inp.readline() .split(" "))
-    last_index_reid = (inp.readline() .split(" "))
-    wins = (inp.readline() .split(" "))
-    sum_reid = (inp.readline() .split(" "))
-    indexl = (inp.readline() .split(" "))
-    composit = (inp.readline() .split(";"))
-    teen = (inp.readline() .split(" "))
-    sostaw = (inp.readline() .split(" "))
-    # zapas = inp.readline()
-    # messag = inp.readline()
-    # zapisan = inp.readline()
-    # dezap = inp.readline()
-    # ykaz = inp.readline()
-    # autir = inp.readline()
-    inp.close()
-    if ('' in order) == True:
-        v = order.index('')
-        del order[v]
-    if ('' in l_author) == True:
-        v = l_author.index('')
-        del l_author[v]
-    if ('' in l_nick) == True:
-        v = l_nick.index('')
-        del l_nick[v]
-    if ('' in l_mention) == True:
-        v = l_mention.index('')
-        del l_mention[v]
-    if ('' in l_author_m) == True:
-        v = l_author_m.index('')
-        del l_author_m[v]
-    if ('' in lst_reid) == True:
-        v = lst_reid.index('')
-        del lst_reid[v]
-    if ('' in reid) == True:
-        v = reid.index('')
-        del reid[v]
-    if ('' in last_reid) == True:
-        v = last_reid.index('')
-        del last_reid[v]
-    if ('' in last_index_reid) == True:
-        v = last_index_reid.index('')
-        del last_index_reid[v]
-    if ('' in wins) == True:
-        v = wins.index('')
-        del wins[v]
-    if ('' in sum_reid) == True:
-        v = sum_reid.index('')
-        del sum_reid[v]
-    if ('' in indexl) == True:
-        v = indexl.index('')
-        del indexl[v]
-    if ('' in composit) == True:
-        v = composit.index('')
-        del composit[v]
-    if ('' in teen) == True:
-        v = teen.index('')
-        del teen[v]
-    if ('' in sostaw) == True:
-        v = sostaw.index('')
-        del sostaw[v]
-    if ('\n' in order) == True:
-        v = order.index('\n')
-        del order[v]
-    if ('\n' in l_author) == True:
-        v = l_author.index('\n')
-        del l_author[v]
-    if ('\n' in l_nick) == True:
-        v = l_nick.index('\n')
-        del l_nick[v]
-    if ('\n' in l_mention) == True:
-        v = l_mention.index('\n')
-        del l_mention[v]
-    if ('\n' in l_author_m) == True:
-        v = l_author_m.index('\n')
-        del l_author_m[v]
-    if ('\n' in lst_reid) == True:
-        v = lst_reid.index('\n')
-        del lst_reid[v]
-    if ('\n' in reid) == True:
-        v = reid.index('\n')
-        del reid[v]
-    if ('\n' in last_reid) == True:
-        v = last_reid.index('\n')
-        del last_reid[v]
-    if ('\n' in last_index_reid) == True:
-        v = last_index_reid.index('\n')
-        del last_index_reid[v]
-    if ('\n' in wins) == True:
-        v = wins.index('\n')
-        del wins[v]
-    if ('\n' in sum_reid) == True:
-        v = sum_reid.index('\n')
-        del sum_reid[v]
-    if ('\n' in indexl) == True:
-        v = indexl.index('\n')
-        del indexl[v]
-    if ('\n' in composit) == True:
-        v = composit.index('\n')
-        del composit[v]
-    if ('\n' in teen) == True:
-        v = teen.index('\n')
-        del teen[v]
-    if ('\n' in sostaw) == True:
-        v = sostaw.index('\n')
-        del sostaw[v]
-
     channel = client.get_channel(int(733230754817114166))
-    await channel.send('К серверу присоеденился {0}!'.format(client.user.name))
-    print(order, l_author, l_nick, l_mention, l_author_m, lst_reid, reid, last_reid, last_index_reid, wins, sum_reid, indexl, composit, teen, sostaw, zapas, messag, zapisano, dezap, ykaz, autir)
+    await channel.send('Reconecting Complite!')
 class ClockThread(threading.Thread):
     def __init__(self,interval):
         threading.Thread.__init__(self)
@@ -701,54 +573,67 @@ class ClockThread(threading.Thread):
         self.interval = interval
     def run(self):
         while True:
-            time.sleep(self.interval)
-            f = open('database.txt', 'w+')
-            f.seek(0)
-            f.close()
-            output = open('database.txt', 'w')
-            orde = ";".join(map(str, order))
-            l_autho = ";".join(map(str, l_author))
-            l_nic =  " ".join(map(str, l_nick))
-            l_mentio = " ".join(map(str, l_mention))
-            l_author_men = " ".join(map(str, l_author_m))
-            lst_rei = " ".join(map(str, lst_reid))
-            rei = " ".join(map(str, reid))
-            last_rei = " ".join(map(str, last_reid))
-            last_index_rei = " ".join(map(str, last_index_reid))
-            win = " ".join(map(str, wins))
-            sum_rei = " ".join(map(str, sum_reid))
-            inde = " ".join(map(str, indexl))
-            composi =";".join(map(str, composit))
-            tee = " ".join(map(str, teen))
-            sosta = " ".join(map(str, sostaw))
-            zapa = " ".join(map(str, zapas))
-            # messa = messag
-            # zapisan = zapisano
-            # deza = dezap
-            # yka = ykaz
-            # auti = autir
-            output.write(str(orde) +';\n')
-            output.write(str(l_autho) +';\n')
-            output.write(str(l_nic) +' \n')
-            output.write(str(l_mentio) +' \n')
-            output.write(str(l_author_men) +' \n')
-            output.write(str(lst_rei) +' \n')
-            output.write(str(rei) +' \n')
-            output.write(str(last_rei) +' \n')
-            output.write(str(last_index_rei) +' \n')
-            output.write(str(win) +' \n')
-            output.write(str(sum_rei) +' \n')
-            output.write(str(inde) +' \n')
-            output.write(str(composi) +'\n')
-            output.write(str(tee) +' \n')
-            output.write(str(sosta) +' \n')
-            output.write(str(zapa) +' \n')
-            # output.write(str(messa) +' \n')
-            # output.write(str(zapisan) +' \n')
-            # output.write(str(deza) +' \n')
-            # output.write(str(yka) +' \n')
-            # output.write(str(auti))
-            output.close()
+            try:
+                time.sleep(self.interval)
+                service.spreadsheets().values().batchUpdate(
+                    spreadsheetId=spreadsheet_id,
+                    body={"valueInputOption": "USER_ENTERED", "data": [
+                        {"range": f"A2:A{len(lst_reid) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [lst_reid]},
+                        {"range": f"B2:B{len(reid) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [reid]},
+                        {"range": f"O2",
+                         "majorDimension": "COLUMNS",
+                         "values": [[len(lst_reid)+2]]},
+                        {"range": f"C2:C{len(teen) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [teen]},
+                        {"range": f"D2:D{len(sostaw) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [sostaw]},
+                        # --------------------------------------------------------------------------------------------------
+                        {"range": f"E2:E{len(l_nick) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [l_nick]},
+                        {"range": f"L2:L{len(l_author) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [l_author]},
+                        {"range": f"F2:F{len(l_mention) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [l_mention]},
+                        {"range": f"G2:G{len(l_author_m) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [l_author_m]},
+                        {"range": f"H2:H{len(last_reid) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [last_reid]},
+                        {"range": f"I2:I{len(last_index_reid) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [last_index_reid]},
+                        {"range": f"J2:J{len(wins) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [wins]},
+                        {"range": f"K2:K{len(sum_reid) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [sum_reid]},
+                        {"range": f"M2:M{len(zapas) + 1}",
+                         "majorDimension": "COLUMNS",
+                         "values": [zapas]},
+                        {"range": f"P2",
+                         "majorDimension": "COLUMNS",
+                         "values": [[len(zapas)+2]]},
+                        {"range": f"Q2",
+                         "majorDimension": "COLUMNS",
+                         "values": [order]},
+                        {"range": f"N2",
+                         "majorDimension": "COLUMNS",
+                         "values": [[len(l_author)+2]]}]}).execute()
+            except:
+                pass
+
+
 t = ClockThread(15)
 t.start()
 tok = "NzMzMjM3NDQ1MTcyMzk2MDQ0"

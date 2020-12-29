@@ -1,5 +1,5 @@
 aiohttp
-discord.py-1.3.4
+discord.py
 gevent-20.6.2
 greenlet-0.4.16
 idna-2.10

@@ -9,7 +9,7 @@ certifi
 cffi
 chardet
 click
-discord.py-1.3.4
+discord.py==1.3.4
 future
 gevent
 google-api-core

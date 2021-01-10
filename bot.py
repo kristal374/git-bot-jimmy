@@ -391,7 +391,7 @@ async def on_message(message):
 \"Удалить игрока *Номер игрока в составе* из состава\" - удаляет игрока из состава, в последствии он не будет учтён в статистике после рейда. (Пахан находится под номером 1, гоп №2 в 8 команде - под номером 10)
 \"Команды\" - выводит список всех команд бота""")
     elif len(msg_list) >= 2 and msg_list[0] == "очистить":
-        if msg_list[1] > 50:
+        if int(msg_list[1]) > 50:
             msg_list[1] = 50
         await ctx.channel.purge(limit=int(msg_list[1])+1)
     elif len(msg_list) == 3 and msg_list[0] == "замена" and int(msg_list[1]) <= 10:
